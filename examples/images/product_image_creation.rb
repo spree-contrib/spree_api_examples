@@ -1,6 +1,7 @@
 require_relative '../client'
 
 image = File.dirname(__FILE__) + '/thinking-cat.jpg'
+attachment = Faraday::UploadIO.new(image, 'image/jpeg')
 
 client = Client.new
 
@@ -8,7 +9,7 @@ client = Client.new
 response = client.post('/api/products/1/images',
   {
     image: {
-      attachment: Faraday::UploadIO.new(image, 'image/jpeg')
+      attachment: attachment
     }
   }
 )
@@ -25,21 +26,6 @@ if response.status == 201
     exit(1)
   end
 else
-  puts "[ERROR] Could not create an image for a product (#{response.status})"
+  puts "[FAILURE] Could not create an image for a product (#{response.status})"
+  exit(1)
 end
-
-# puts "Adding an image to a variant..."
-# # Adding an image to a variant
-# response = Client.post('/variant/1/images',
-#   body: {
-#     image: {
-#       attachment: image
-#     }
-#   }
-# )
-
-# if response.code != 200
-#   puts "[ERROR] Could not create an image for a variant (#{response.code})"
-# else
-#   puts "[SUCCESS] Created an image for a variant."
-# end
