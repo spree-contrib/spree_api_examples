@@ -17,6 +17,10 @@ class Client
     end
   end
 
+  def get(url, params={})
+    conn.get(url, params)
+  end
+
   def post(url, params={})
     conn.post(url, params) 
   end
