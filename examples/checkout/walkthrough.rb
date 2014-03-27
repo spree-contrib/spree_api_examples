@@ -182,6 +182,7 @@ response = client.put("/api/checkouts/#{order['number']}",
       }
     }
   }
+})
   # I can see it changing in the future of Spree to something saner.
   # 
   # payments_attributes: [
@@ -202,7 +203,34 @@ response = client.put("/api/checkouts/#{order['number']}",
   # This would allow for more than one payment to be assigned in the checkout.
   # That could be useful in the future.
   # For instance, if we wanted to support gift vouchers or multiple payment methods at once.
-})
+  # 
+  #
+  #
+  # If you wanted to submit a token from Stripe/Braintree/whatever, you would do it like this:
+  # order: {
+  #   payments_attributes: {
+  #     payment_method_id: stripe_payment_method['id']
+  #   },
+  #   payment_source: {
+  #     stripe_payment_method['id'] => {
+  #       gateway_payment_profile_id: 'CC_TOKEN_GOES_HERE'
+  #     }
+  #   }
+  # }
+  # 
+  # Note that some gateways require you to pass a customer_profile_id as well as a payment profile:
+  # In that case, it would be done like this:
+  # order: {
+  #   payments_attributes: {
+  #     payment_method_id: some_random_payment_method['id']
+  #   },
+  #   payment_source: {
+  #     some_random_payment_method['id'] => {
+  #        gateway_customer_profile_id: 'CUSTOMER_TOKEN_GOES_HERE'
+  #       gateway_payment_profile_id: 'CC_TOKEN_GOES_HERE'
+  #     }
+  #   }
+  # }
 
 if response.status == 200
   order = JSON.parse(response.body)
