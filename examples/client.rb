@@ -4,7 +4,8 @@ require 'json'
 require 'pry'
 
 class Client
-  attr_accessor :conn
+  attr_accessor :conn, :last_response
+
   def initialize
     options = {
       url: 'http://localhost:3000',
@@ -18,14 +19,32 @@ class Client
   end
 
   def get(url, params={})
-    conn.get(url, params)
+    @last_response = conn.get(url, params)
   end
 
   def post(url, params={})
-    conn.post(url, params) 
+    @last_response = conn.post(url, params) 
+  end
+
+  def put(url, params={})
+    @last_response = conn.put(url, params)
   end
 
   def delete(url, params={})
-    conn.delete(url, params)
+    @last_response = conn.delete(url, params)
+  end
+
+  def succeeded(message)
+    puts "[SUCCESS] #{message}"
+  end
+
+  def failed(message)
+    puts "[FAILURE] #{message} (#{last_response.status})"
+    errors = JSON.parse(last_response.body)
+    if errors['error']
+      puts errors['error']
+      puts errors['errors']
+    end
+    exit(1)
   end
 end

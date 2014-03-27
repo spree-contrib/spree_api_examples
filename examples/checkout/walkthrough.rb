@@ -173,12 +173,13 @@ response = client.put("/api/checkouts/#{order['number']}",
       payment_method_id: credit_card_payment_method['id']
     },
     payment_source: {
-      number: '4111111111111111',
-      month: '1',
-      year: '2017',
-      verification_value: '123',
-      first_name: 'John',
-      last_name: 'Smith'
+      credit_card_payment_method['id'] => {
+        number: '1', # just a nonsense one. Will work with dummy CC gateway
+        month: '1',
+        year: '2017',
+        verification_value: '123',
+        name: 'John Smith',
+      }
     }
   }
   # I can see it changing in the future of Spree to something saner.
@@ -202,9 +203,34 @@ response = client.put("/api/checkouts/#{order['number']}",
   # That could be useful in the future.
   # For instance, if we wanted to support gift vouchers or multiple payment methods at once.
 })
+
 if response.status == 200
+  order = JSON.parse(response.body)
   client.succeeded "Payment details provided for the order."
+  # Order will transition to the confirm state only if the selected payment
+  # method allows for payment profiles.
+  # The dummy Credit Card gateway in Spree does, so confirm is shown for this order.
+  if order['state'] == 'confirm'
+    client.succeeded "Order automatically transitioned to 'confirm'."
+  else
+    client.failed "Order did not transition automatically to 'confirm'."
+  end
 else
   client.failed "Payment details were not accepted for the order."
+end
+
+# This is the final point where the user gets to view their order's final information.
+# All that's required at this point is that we complete the order, which is as easy as:
+
+response = client.put("/api/checkouts/#{order['number']}/next")
+if response.status == 200
+  order = JSON.parse(response.body)
+  if order['state'] == 'complete'
+    client.succeeded "Order complete!"
+  else
+    client.failed "Order did not complete."
+  end
+else
+  client.failed "Order could not transition to 'complete'."
 end
     
