@@ -1,20 +1,9 @@
 require_relative '../client'
 client = Client.new
 
-# You can choose to create an order with line items right off the bat:
-# response = client.post('/api/checkouts', {
-#   order: {
-#     # Repeat the elements in this hash for as many line items as you please.
-#     line_items: {
-#       "0" => {
-#         variant_id: 1,
-#         quantity: 5
-#       }
-#     }
-#   }
-# })
-
-# Or you can go through it step by step:
+# Create the order step by step:
+# You may also choose to start it off with some line items
+# See checkout/creating_with_line_items.rb
 response = client.post('/api/checkouts')
 
 if response.status == 201
