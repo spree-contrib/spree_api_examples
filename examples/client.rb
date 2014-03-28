@@ -45,6 +45,7 @@ class Client
       puts errors['error']
       puts errors['errors']
     end
+    puts "Error occurred at: " + caller[0]
     exit(1)
   end
 end
