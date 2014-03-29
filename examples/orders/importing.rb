@@ -19,8 +19,29 @@
  
 require_relative '../client'
 client = Client.new
+
+# First thing you might want to do is to create a user for this order.
+# The parameters below assume spree_auth_devise
+# These might be different if you're using a different authentication method.
+response = client.post('/api/users',
+  {
+    user: {
+      email: "test#{rand(9999999)}@example.com",
+      password: "password",
+      password_confirmation: "password"
+    }
+  }
+)
+
+if response.status == 201
+  user = JSON.parse(response.body)
+  client.succeeded "User was created successfully."
+else
+  client.failed "User could not be created"
+end
  
-# Add address information to the order
+# The next step is to add address information the order
+# This will be automatically linked to the user.
 # Before you make this request, you may need to make a request to one or both of:
 # - /api/countries
 # - /api/states
@@ -70,6 +91,7 @@ address = {
 # We use POST /api/checkouts here but POST /api/orders works too.
 response = client.post('/api/checkouts', {
   order: {
+    user_id: user["id"],
     completed_at: Date.today.to_s,
     line_items: {
       "0" => {
@@ -107,9 +129,15 @@ response = client.post('/api/checkouts', {
     # That's even though we support this feature in Spree 2.2.
   }
 })
+
 if response.status == 201
   order = JSON.parse(response.body)
   client.succeeded 'Order has been successfully imported.'
+  if order["user_id"] == user["id"]
+    client.succeeded 'User was correctly associated with this order.'
+  else
+    client.failed 'Expected order to be associated with a user, but it was not.'
+  end
 else
   client.failed 'Order failed to import.'
 end
