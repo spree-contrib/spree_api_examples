@@ -203,6 +203,31 @@ response = client.put("/api/checkouts/#{order['number']}",
   state: 'payment'
 })
 
+if response.status == 200
+  order = JSON.parse(response.body)
+  client.succeeded "Second payment added to order."
+  if order['state'] == 'confirm'
+    client.succeeded "Order automatically transitioned to 'confirm' again."
+  else
+    client.failed "Order did not transition automatically to 'confirm'."
+  end
+  
+  payments = order['payments'].sort { |p1, p2| p1["id"] <=> p2["id"] }
+  if payments.first["state"] == "invalid"
+    client.succeeded "First payment has been marked as invalid."
+  else
+    client.failed "First payment is not invalid, is #{payments.first["state"]} instead."
+  end
+
+  if payments.last["state"] == "checkout"
+    client.succeeded "Second payment is in checkout state."
+  else
+    client.failed "Second payment is not in checkout, is #{payments.last["state"]} instead."
+  end
+else
+  client.failed "Payment details were not accepted for the order."
+end
+
 # This is the final point where the user gets to view their order's final information.
 # All that's required at this point is that we complete the order, which is as easy as:
 
