@@ -28,6 +28,11 @@ These commands will give you *most* of what you need. One final thing:
 
 **Now you're ready to run the tests and be MEGA SUCCESSFUL**.
 
+You can run them in two ways:
+
+    ruby test.rb # this will run them all
+    ruby examples/checkout/walkthrough.rb # this will run just the one
+
 ## License
 
 Do whatever you want with the source code.
