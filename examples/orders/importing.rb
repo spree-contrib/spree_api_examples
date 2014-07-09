@@ -77,8 +77,8 @@ end
 # We can finally submit some address information now that we have it all:
  
 address = {
-  first_name: 'Test',
-  last_name: 'User',
+  firstname: 'Test',
+  lastname: 'User',
   address1: 'Unit 1',
   address2: '1 Test Lane',
   country_id: usa['id'],
@@ -87,9 +87,8 @@ address = {
   zipcode: '20814',
   phone: '(555) 555-5555'
 }
- 
-# We use POST /api/checkouts here but POST /api/orders works too.
-response = client.post('/api/checkouts', {
+
+response = client.post('/api/orders', {
   order: {
     user_id: user["id"],
     completed_at: Date.today.to_s,

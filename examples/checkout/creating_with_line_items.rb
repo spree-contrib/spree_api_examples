@@ -1,7 +1,7 @@
 require_relative '../client'
 client = Client.new
 
-response = client.post('/api/checkouts', {
+response = client.post('/api/orders', {
   order: {
     # Repeat the elements in this hash for as many line items as you please.
     line_items: {

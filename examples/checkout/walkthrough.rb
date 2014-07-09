@@ -4,7 +4,7 @@ client = Client.new
 # Create the order step by step:
 # You may also choose to start it off with some line items
 # See checkout/creating_with_line_items.rb
-response = client.post('/api/checkouts')
+response = client.post('/api/orders')
 
 if response.status == 201
   puts "[SUCCESS] Created new checkout."
@@ -26,7 +26,7 @@ end
 
 # Assign a line item to the order we just created.
 
-response = client.post("/api/checkouts/#{order['number']}/line_items",
+response = client.post("/api/orders/#{order['number']}/line_items",
   {
     line_item: {
       variant_id: 1,
@@ -158,17 +158,17 @@ response = client.put("/api/checkouts/#{order['number']}",
     # Due to the rather interesting code that we have for payment attribute processing:
     # https://github.com/spree/spree/blob/5c331d2c6a1055b4d66f893d41881cbbb86586c5/api/app/controllers/spree/api/checkouts_controller.rb#L57-L73
     # This is actually the 'correct' way to do it.
-    payments_attributes: {
+    payments_attributes: [{
       payment_method_id: credit_card_payment_method['id']
-    },
-    payment_source: {
-      credit_card_payment_method['id'] => {
-        number: '1', # just a nonsense one. Will work with dummy CC gateway
-        month: '1',
-        year: '2017',
-        verification_value: '123',
-        name: 'John Smith',
-      }
+    }],
+  },
+  payment_source: {
+    credit_card_payment_method['id'] => {
+      number: '1', # just a nonsense one. Will work with dummy CC gateway
+      month: '1',
+      year: '2017',
+      verification_value: '123',
+      name: 'John Smith',
     }
   }
   # I can see it changing in the future of Spree to something saner.
