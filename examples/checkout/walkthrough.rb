@@ -160,16 +160,16 @@ module Examples
             payments_attributes: [{
               payment_method_id: credit_card_payment_method['id']
             }],
-          },
-          payment_source: {
-            credit_card_payment_method['id'] => {
-              number: '1', # just a nonsense one. Will work with dummy CC gateway
-              month: '1',
-              year: '2017',
-              verification_value: '123',
-              name: 'John Smith',
+            payment_source: {
+              credit_card_payment_method['id'] => {
+                number: '1', # just a nonsense one. Will work with dummy CC gateway
+                month: '1',
+                year: '2017',
+                verification_value: '123',
+                name: 'John Smith',
+              }
             }
-          }
+          },
         })
 
         if response.status == 200
@@ -194,15 +194,15 @@ module Examples
             payments_attributes: [{
               payment_method_id: credit_card_payment_method['id']
             }],
-          },
-          payment_source: {
-            credit_card_payment_method['id'] => {
-              number: '1', # just a nonsense one. Will work with dummy CC gateway
-              month: '1',
-              year: '2017',
-              verification_value: '123',
-              name: 'John Smith',
-            }
+            payment_source: {
+              credit_card_payment_method['id'] => {
+                number: '1', # just a nonsense one. Will work with dummy CC gateway
+                month: '1',
+                year: '2017',
+                verification_value: '123',
+                name: 'John Smith',
+              }
+            },
           },
           state: 'payment'
         })
