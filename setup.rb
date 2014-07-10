@@ -1,0 +1,5 @@
+require 'bundler/setup'
+require 'faraday'
+require 'json'
+require 'colorize'
+require 'pry'
