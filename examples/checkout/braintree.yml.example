@@ -1,0 +1,4 @@
+environment: sandbox
+merchant_id: <merchant id>
+public_key: <public key>
+private_key: <private key>
