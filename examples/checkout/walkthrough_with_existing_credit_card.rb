@@ -174,9 +174,16 @@ module Examples
           }
         )
 
-        customer_id = result.customer.id
-        card_token = result.customer.credit_cards[0].token
-        brand = result.customer.credit_cards[0].card_type.downcase.to_sym
+		customer_id = result.customer.id
+		# Base second token off first, so we can easily tell which one got processed
+        card_token = result.customer.credit_cards[0].token + "_second"
+
+        result = Braintree::CreditCard.create(
+		  :customer_id => customer_id,
+		  :token => card_token,
+		  :number => "4111111111111111",
+		  :expiration_date => "05/2020"
+        )
 
         # Find the braintree payment method:
         braintree_payment_method = order['payment_methods'].detect { |pm| pm['name'] == "Braintree" }
