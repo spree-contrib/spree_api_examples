@@ -8,7 +8,7 @@ There are not that many examples at the moment. This will change, over time. You
 
 ## Do these examples work?
 
-Sure they do! On 2-2-stable at the moment 2-3-stable is broken :(
+Sure they do!
 
 There's a catch, though: you have to run them against a sample store setup using Spree's sample data. You can set one up by installing Spree and then running these commands:
 

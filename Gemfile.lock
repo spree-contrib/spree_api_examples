@@ -1,6 +1,9 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    braintree (2.32.1)
+      builder (>= 2.0.0)
+    builder (3.2.2)
     coderay (1.1.0)
     colorize (0.7.3)
     faraday (0.9.0)
@@ -19,6 +22,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  braintree
   colorize
   faraday
   httpclient
