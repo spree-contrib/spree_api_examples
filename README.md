@@ -8,9 +8,13 @@ There are not that many examples at the moment. This will change, over time. You
 
 ## Do these examples work?
 
-Sure they do!
+Sure they do! On 2-2-stable at the moment 2-3-stable is broken :(
 
 There's a catch, though: you have to run them against a sample store setup using Spree's sample data. You can set one up by installing Spree and then running these commands:
+
+    bundle exec rake db:reset spree_sample:load AUTO_ACCEPT=1
+
+Which is the equivalant of running:
 
     bundle exec rake db:drop
     bundle exec rake db:create
@@ -23,8 +27,7 @@ These commands (of course) will kill everything you know and love in your databa
 These commands will give you *most* of what you need. One final thing:
 
     rails console
-    user = Spree::User.first
-    user.update_column(:spree_api_key, 'fake')
+    Spree::User.first.update_column(:spree_api_key, 'fake')
 
 **Now you're ready to run the tests and be MEGA SUCCESSFUL**.
 

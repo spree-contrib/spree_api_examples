@@ -1,9 +1,16 @@
 require_relative '../base'
+require 'braintree'
+require 'yaml'
 
 module Examples
   module Checkout
-    class Walkthrough
+    class WalkthroughWithExistingCreditCard
       def self.run(client)
+        braintree_config_file = File.dirname(__FILE__) + "/braintree.yml"
+        unless File.exists?(braintree_config_file)
+          client.pending "braintree.yml does not exist. Cannot proceed."
+          exit
+        end
 
         # Create the order step by step:
         # You may also choose to start it off with some line items
@@ -151,85 +158,60 @@ module Examples
 
         # Next step: payment!
 
-        # First up: a credit card payment
-        credit_card_payment_method = order['payment_methods'].detect { |pm| pm['name'] == "Credit Card" }
+        braintree_config = YAML.load_file(braintree_config_file)
 
-        response = client.put("/api/checkouts/#{order['number']}",
-        {
-          order: {
-            payments_attributes: [{
-              payment_method_id: credit_card_payment_method['id']
-            }],
-          },
-          payment_source: {
-            credit_card_payment_method['id'] => {
-              number: '1', # just a nonsense one. Will work with dummy CC gateway
-              month: '1',
-              year: '2017',
-              verification_value: '123',
-              name: 'John Smith',
-            }
+        Braintree::Configuration.environment = braintree_config["environment"].to_sym
+        Braintree::Configuration.merchant_id = braintree_config["merchant_id"]
+        Braintree::Configuration.public_key = braintree_config["public_key"]
+        Braintree::Configuration.private_key = braintree_config["private_key"]
+
+        result = Braintree::Customer.create(
+          :first_name => "Test",
+          :last_name => "User",
+          :credit_card => {
+            :number => "4111111111111111",
+            :expiration_date => "05/2020"
           }
-        })
+        )
 
-        if response.status == 200
-          order = JSON.parse(response.body)
-          client.succeeded "Payment details provided for the order."
-          # Order will transition to the confirm state only if the selected payment
-          # method allows for payment profiles.
-          # The dummy Credit Card gateway in Spree does, so confirm is shown for this order.
-          if order['state'] == 'confirm'
-            client.succeeded "Order automatically transitioned to 'confirm'."
-          else
-            client.failed "Order did not transition automatically to 'confirm'."
-          end
-        else
-          client.failed "Payment details were not accepted for the order."
-        end
+        customer_id = result.customer.id
+        card_token = result.customer.credit_cards[0].token
+        brand = result.customer.credit_cards[0].card_type.downcase.to_sym
 
-        # Test for #4927
-        response = client.put("/api/checkouts/#{order['number']}",
-        {
-          order: {
-            payments_attributes: [{
-              payment_method_id: credit_card_payment_method['id']
-            }],
-          },
-          payment_source: {
-            credit_card_payment_method['id'] => {
-              number: '1', # just a nonsense one. Will work with dummy CC gateway
-              month: '1',
-              year: '2017',
-              verification_value: '123',
-              name: 'John Smith',
+        # Find the braintree payment method:
+        braintree_payment_method = order['payment_methods'].detect { |pm| pm['name'] == "Braintree" }
+        if braintree_payment_method
+          response = client.put("/api/checkouts/#{order['number']}",
+          {
+            order: {
+              payments_attributes: [{
+                payment_method_id: braintree_payment_method['id']
+              }],
+            },
+            payment_source: {
+              braintree_payment_method['id'] => {
+                gateway_customer_profile_id: customer_id,
+                gateway_payment_profile_id: card_token,
+              }
             }
-          },
-          state: 'payment'
-        })
+          })
 
-        if response.status == 200
-          order = JSON.parse(response.body)
-          client.succeeded "Second payment added to order."
-          if order['state'] == 'confirm'
-            client.succeeded "Order automatically transitioned to 'confirm' again."
+          if response.status == 200
+            order = JSON.parse(response.body)
+            client.succeeded "Payment details provided for the order."
+            # Order will transition to the confirm state only if the selected payment
+            # method allows for payment profiles.
+            # The dummy Credit Card gateway in Spree does, so confirm is shown for this order.
+            if order['state'] == 'confirm'
+              client.succeeded "Order automatically transitioned to 'confirm'."
+            else
+              client.failed "Order did not transition automatically to 'confirm'."
+            end
           else
-            client.failed "Order did not transition automatically to 'confirm'."
-          end
-
-          payments = order['payments'].sort { |p1, p2| p1["id"] <=> p2["id"] }
-          if payments.first["state"] == "invalid"
-            client.succeeded "First payment has been marked as invalid."
-          else
-            client.failed "First payment is not invalid, is #{payments.first["state"]} instead."
-          end
-
-          if payments.last["state"] == "checkout"
-            client.succeeded "Second payment is in checkout state."
-          else
-            client.failed "Second payment is not in checkout, is #{payments.last["state"]} instead."
+            client.failed "Payment details were not accepted for the order."
           end
         else
-          client.failed "Payment details were not accepted for the order."
+          client.failed "Braintree payment method not found."
         end
 
         # This is the final point where the user gets to view their order's final information.
@@ -251,4 +233,4 @@ module Examples
   end
 end
 
-Examples.run(Examples::Checkout::Walkthrough)
+Examples.run(Examples::Checkout::WalkthroughWithExistingCreditCard)
