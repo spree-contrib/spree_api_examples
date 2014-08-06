@@ -1,22 +1,22 @@
 GEM
   remote: https://rubygems.org/
   specs:
-    braintree (2.32.1)
+    braintree (2.33.1)
       builder (>= 2.0.0)
     builder (3.2.2)
     coderay (1.1.0)
     colorize (0.7.3)
     faraday (0.9.0)
       multipart-post (>= 1.2, < 3)
-    httpclient (2.3.4.1)
+    httpclient (2.4.0)
     json (1.8.1)
     method_source (0.8.2)
     multipart-post (2.0.0)
-    pry (0.9.12.6)
-      coderay (~> 1.0)
-      method_source (~> 0.8)
+    pry (0.10.0)
+      coderay (~> 1.1.0)
+      method_source (~> 0.8.1)
       slop (~> 3.4)
-    slop (3.5.0)
+    slop (3.6.0)
 
 PLATFORMS
   ruby
