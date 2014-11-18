@@ -5,10 +5,16 @@ module Examples
     class SwitchingAddressRecalculatesTaxes
       def self.run(client)
 
+        if Clients::JSON === client
+          client.pending "SwitchingAddressRecalculatesTaxes does not work with JSON client."
+          return
+        end
+
         # Create the order step by step:
         # You may also choose to start it off with some line items
         # See checkout/creating_with_line_items.rb
-        response = client.post('/api/orders')
+
+        response = client.post('/api/orders', {})
 
         if response.status == 201
           client.succeeded "Created new checkout."
@@ -62,13 +68,19 @@ module Examples
         # This will give you the correct country_id and state_id params to use for address information.
 
         # First, get the country:
-        response = client.get('/api/countries?q[name_cont]=United States')
+        response = client.get('/api/countries?q[name_cont]=United')
         if response.status == 200
           client.succeeded "Retrieved a list of countries."
           countries = JSON.parse(response.body)['countries']
-          usa = countries.first
-          if usa['name'] != 'United States'
-            client.failed "Expected first country to be 'United States', but it wasn't."
+
+          usa = countries.detect { |c| c['name'] == 'United States' }
+          if usa.nil?
+            client.failed "Expected 'United States' be returned when querying countries by 'United'."
+          end
+
+          uk = countries.detect { |c| c['name'] == 'United Kingdom' }
+          if uk.nil?
+            client.failed "Expected 'United Kingdom' be returned when querying countries by 'United'."
           end
         else
           client.failed "Failed to retrieve a list of countries."
@@ -104,9 +116,10 @@ module Examples
           last_name: 'User',
           address1: '1500 South Willow Street',
           address2: '',
-          country_id: usa['id'],
-          state_id: untaxed_state_id,
-          city: 'Manchester',
+          country_id: uk['id'],
+          state_id: nil,
+          state_name: 'London',
+          city: 'London',
           zipcode: '03103',
           phone: '(555) 555-5555'
         }
@@ -134,7 +147,7 @@ module Examples
          })
 
         order = JSON.parse(response.body)
-        puts "Taxes calculated for untaxable state: " + order['display_tax_total']
+        puts "Taxes calculated for untaxable state: #{order['display_tax_total']}"
         if (order['tax_total'].to_f != 0)
           client.failed "Taxes should be zero."
         end

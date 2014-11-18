@@ -6,6 +6,11 @@ module Examples
   module Checkout
     class WalkthroughWithExistingCreditCard
       def self.run(client)
+        if Clients::JSON === client
+          client.pending "Checkout::WalkthroughWithExistingCreditCard does not work with JSON client."
+          return
+        end
+
         # Create the order step by step:
         # You may also choose to start it off with some line items
         # See checkout/creating_with_line_items.rb

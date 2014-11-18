@@ -4,6 +4,10 @@ module Examples
   module Checkout
     class Walkthrough
       def self.run(client)
+        if Clients::JSON === client
+          client.pending "Checkout::Walkthrough does not work with JSON client."
+          return
+        end
 
         # Create the order step by step:
         # You may also choose to start it off with some line items
