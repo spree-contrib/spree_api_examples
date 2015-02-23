@@ -6,6 +6,8 @@ module Examples
       class CRUD
         def self.run(client)
 
+          ov_id = nil
+
           # create a new product
           response = client.post("/api/products",
             {
@@ -58,13 +60,54 @@ module Examples
 
             if response.status == 201
               client.succeeded "Created an option value."
+              ov = JSON.parse(response.body)
+              ov_id = ov['id']
             else
               client.failed "Could not create option value (#{response.status})"
               exit(1)
             end
           end
 
-          #TODO: There's no API for assigning option_types to products
+          # Update product with option types
+          response = client.put("/api/products/#{id}",
+            {
+              product: {
+                option_types: [ot_id]
+              }
+            }
+          )
+
+          if response.status == 200
+            client.succeeded "Updated product."
+
+            product = JSON.parse(response.body)
+          else
+            client.failed "Failed to update product (#{response.status})"
+            exit(1)
+          end
+
+          # Create variant
+          response = client.post("/api/products/#{id}/variants",
+            {
+              variant: {
+                option_value_ids: [ov_id]
+              }
+            }
+          )
+
+          if response.status == 201
+            variant = JSON.parse(response.body)
+            puts variant
+            if variant['option_values'].empty?
+              client.failed "Failed to assign option value (#{response.status})"
+              exit(1)
+            else
+              client.succeeded "Created Variant."
+            end
+          else
+            client.failed "Failed to create variant (#{response.status})"
+            exit(1)
+          end
 
         end
       end
