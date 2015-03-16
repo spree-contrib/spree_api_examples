@@ -36,6 +36,14 @@ You can run them in two ways:
     ruby test.rb # this will run them all
     ruby examples/checkout/walkthrough.rb # this will run just the one
 
+## Guest Examples
+
+In order to run guest examples that don't require an API key you must disable API authentication in `config/initializers/spree.rb`:
+
+```
+Spree::Api::Config[:requires_authentication] = false
+```
+
 ## License
 
 Do whatever you want with the source code.

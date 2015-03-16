@@ -1,11 +1,9 @@
-require_relative '../clients/base'
-require_relative '../clients/json'
+require_relative '../clients/guest'
 
 module Examples
   def self.run(example)
     clients = []
-    clients << Clients::Base.new
-    clients << Clients::JSON.new
+    clients << Clients::Guest.new
 
     clients.each do |client|
       message = "Running #{example.name} with #{client.class.name}"

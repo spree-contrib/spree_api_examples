@@ -1,23 +1,18 @@
-require_relative '../base'
+require_relative '../guest'
 
 module Examples
   module Checkout
-    class Walkthrough
+    class WalkthroughAsGuest
       def self.run(client)
-        if Clients::JSON === client
-          client.pending "Checkout::Walkthrough does not work with JSON client."
-          return
-        end
-
         # Create the order step by step:
         # You may also choose to start it off with some line items
         # See checkout/creating_with_line_items.rb
-        response = client.post('/api/v1/orders')
+        response = client.post('/api/v1/orders?order[email]=test@example.com')
 
         if response.status == 201
           client.succeeded "Created new checkout."
           order = JSON.parse(response.body)
-          if order['email'] == 'spree@example.com'
+          if order['email'] == 'test@example.com'
             # Email addresses are necessary for orders to transition to address.
             # This just makes really sure that the email is already set.
             # You will not have to do this in your own API unless you've customized it.
@@ -39,7 +34,8 @@ module Examples
             line_item: {
               variant_id: 1,
               quantity: 1
-            }
+            },
+            order_token: order['token']
           }
         )
 
@@ -51,7 +47,7 @@ module Examples
         end
 
         # Transition the order to the 'address' state
-        response = client.put("/api/v1/checkouts/#{order['number']}/next")
+        response = client.put("/api/v1/checkouts/#{order['number']}/next?order_token=#{order['token']}")
         if response.status == 200
           order = JSON.parse(response.body)
           client.succeeded "Transitioned order into address state."
@@ -111,7 +107,8 @@ module Examples
             order: {
               bill_address_attributes: address,
               ship_address_attributes: address
-            }
+            },
+            order_token: order['token']
           }
         )
 
@@ -137,7 +134,8 @@ module Examples
                 id: first_shipment['id'],
                 selected_shipping_rate_id: first_shipment['shipping_rates'].first['id']
               ]
-            }
+            },
+            order_token: order['token']
           }
         )
 
@@ -165,6 +163,7 @@ module Examples
               payment_method_id: credit_card_payment_method['id']
             }],
           },
+          order_token: order['token'],
           payment_source: {
             credit_card_payment_method['id'] => {
               number: '1', # just a nonsense one. Will work with dummy CC gateway
@@ -199,6 +198,7 @@ module Examples
               payment_method_id: credit_card_payment_method['id']
             }],
           },
+          order_token: order['token'],
           payment_source: {
             credit_card_payment_method['id'] => {
               number: '1', # just a nonsense one. Will work with dummy CC gateway
@@ -239,7 +239,7 @@ module Examples
         # This is the final point where the user gets to view their order's final information.
         # All that's required at this point is that we complete the order, which is as easy as:
 
-        response = client.put("/api/v1/checkouts/#{order['number']}/next")
+        response = client.put("/api/v1/checkouts/#{order['number']}/next?order_token=#{order['token']}")
         if response.status == 200
           order = JSON.parse(response.body)
           if order['state'] == 'complete'
@@ -255,4 +255,4 @@ module Examples
   end
 end
 
-Examples.run(Examples::Checkout::Walkthrough)
+Examples.run(Examples::Checkout::WalkthroughAsGuest)
